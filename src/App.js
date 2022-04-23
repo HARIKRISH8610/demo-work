@@ -2,72 +2,90 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import formula_1 from "./formula_1.json";
 import formula_2 from "./formula_2.json";
+import Answer from "./Answer";
+
 function App() {
-  const [value1, setValue1] = useState("");
-  const [value2, setValue2] = useState("");
-  const [value3, setValue3] = useState("");
-  var [totalVal, setTotalVal] = useState("");
   const [getval, setGetval] = useState("");
-  const [formula1, setFormula1] = useState(true);
-  const [formula2, setFormula2] = useState(false);
+  const [formula, setFormula] = useState("");
+  const [answer, setAnswer] = useState(false);
+  const [calcVal, setCalcVal] = useState("");
+  const [count, setCount] = useState([0, true]);
 
-  // const fnClick = () => {
-  //   console.log(value.name);
-  // };
-  const fnOnchange = (val, name) => {
-    // switch (name) {
-    //   case "input0":
-    //     return setValue1(val);
-    //   case "input1":
-    //     return setValue2(val);
-
-    //   default:
-    //     return setValue3(val);
-    // }
-    var getData = {
-      nameIn: name,
-      values: val,
-    };
-    // console.log(getData);
-    setGetval([getval, getData]);
-  };
   useEffect(() => {
-    fnOnchangeStr();
-  }, [value1, value2, value3]);
+    if (count[1] == true) {
+      setFormula(formula_1);
+    } else {
+      setFormula(formula_2);
+    }
+  }, [count]);
 
-  const fnOnchangeStr = () => {
-    var a = formula_1[0].formula;
-    var b = formula_1[1].formula;
-    var c = formula_1[1].formula;
-    var data = [
-      {
-        formula: a,
-        value: value1,
-      },
-      {
-        formula: b,
-        value: value2,
-      },
-      {
-        formula: c,
-        value: value3,
-      },
-    ];
-    setTotalVal(data);
+  const fnOnchange = (val, name) => {
+    if (getval == "") {
+      var getData = {
+        nameIn: name,
+        values: val,
+      };
+      setGetval([getData]);
+    } else {
+      var find = [];
+      for (let i = 0; i < getval.length; i++) {
+        if (getval[i].nameIn == name) {
+          find.push(...find, true);
+        } else {
+          find.push(...find, false);
+        }
+      }
+      var Present = find.includes(true);
+      if (Present == false) {
+        var getData = {
+          nameIn: name,
+          values: val,
+        };
+        setGetval([...getval, getData]);
+      } else {
+        for (let i = 0; i < getval.length; i++) {
+          if (getval[i].nameIn == name) {
+            var getData = {
+              nameIn: name,
+              values: val,
+            };
+            var replacedate = getval;
+            replacedate.splice(i, 1, getData);
+            setGetval([...replacedate]);
+          }
+        }
+      }
+    }
   };
+
   const fnOnclick = () => {
-    console.log(totalVal);
+    setAnswer(true);
+    var newdatas = [];
+    for (let i = 0; i < getval.length; i++) {
+      var datas = [formula[i].formula, getval[i].values];
+      newdatas.push({ datas });
+    }
+    var Calcval = [];
+    for (let i = 0; i < newdatas.length; i++) {
+      var findIn = [...newdatas[i].datas[0]];
+      var index = findIn.indexOf("x");
+      findIn.splice(index, 1, newdatas[i].datas[1]);
+      var joined = findIn.join("");
+      var calculation = eval(joined);
+      Calcval.push(calculation);
+    }
+    setCalcVal(Calcval);
   };
   return (
-    <>
+    <div className="ms-4">
       <div className="mt-4">
         <button
           onClick={() => {
-            setFormula1(true);
-            setFormula2(false);
-            setValue1("");
-            setValue2("");
-            setValue3("");
+            setFormula("");
+            setGetval("");
+            setCalcVal("");
+            setCount([count[0] + 1, true]);
+            setAnswer(false);
           }}
           className="btn btn-primary btn-sm"
         >
@@ -76,24 +94,24 @@ function App() {
         {"    "}
         <button
           onClick={() => {
-            setFormula1(false);
-            setFormula2(true);
-            setValue1("");
-            setValue2("");
-            setValue3("");
+            setAnswer(false);
+            setFormula("");
+            setGetval("");
+            setCalcVal("");
+            setCount([count[0] + 1, false]);
           }}
           className="btn btn-primary btn-sm"
         >
           formula-2
         </button>
       </div>
-      <div className="table-div">
-        {formula1 && (
+      <div className="mt-3 table-div">
+        {formula && (
           <>
             <table>
               <tbody>
-                {formula_1 &&
-                  formula_1.map((data, index) => (
+                {formula &&
+                  formula.map((data, index) => (
                     <tr key={index}>
                       <td>
                         <input
@@ -115,37 +133,17 @@ function App() {
                   ))}
               </tbody>
             </table>
-            <button onClick={() => fnOnclick()}>submit</button>
-          </>
-        )}
-        {formula2 && (
-          <>
-            <table>
-              <tbody>
-                {formula_2 &&
-                  formula_2.map((data, index) => (
-                    <tr key={index}>
-                      <td>
-                        <input type="text" defaultValue={data.formula} />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          onChange={(e) => {
-                            fnOnchange(e.target.value, e.target.name);
-                          }}
-                          name={"input" + [index]}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-            <button onClick={() => fnOnclick()}>submit</button>
+            <button
+              className="btn mt-4 btn-success btn-sm"
+              onClick={() => fnOnclick()}
+            >
+              submit
+            </button>
           </>
         )}
       </div>
-    </>
+      {answer && <Answer value={calcVal} />}
+    </div>
   );
 }
 
