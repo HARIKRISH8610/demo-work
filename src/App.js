@@ -28,7 +28,7 @@ function App() {
       nameIn: name,
       values: val,
     };
-    console.log(getData);
+    // console.log(getData);
     setGetval([getval, getData]);
   };
   useEffect(() => {
